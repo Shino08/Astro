@@ -6,6 +6,7 @@ import Footer from '../../components/Footer.astro';
 import AmazonLogo from '../../components/AmazonLogo.astro';
 import BookScore from '../../components/BookScore.astro';
 import { getCollection, render } from 'astro:content';
+import BuyButton from '../../components/BuyButton.astro';
 
 export async function getStaticPaths() {
   const books = await getCollection('books');
@@ -34,19 +35,20 @@ export const prerender = true;
         class="rounded w-72 h-auto shadow-md object-contain" 
       />
 
-      <BookScore server:defer id={book.id} />
+      <BookScore server:defer id={book.id} >
+        <span slot="fallback" class="text-xs text-zinc-500">Cargando puntuación...</span>
+      </BookScore>
 
       {
-      SHOW_BUY_BUTTON && (
-        <a 
-          href={book.data.buy.spain} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          class="mt-4 inline-flex items-center gap-2 rounded bg-[#f0f0f0] px-4 py-2 text-sm font-medium text-[#170d0e] shadow-sm transition hover:bg-[#e0e0e0]">
-          Comprar en Amazon España
-          <AmazonLogo />
-        </a>
-      )}
+        SHOW_BUY_BUTTON && (
+          <BuyButton server:defer buy={book.data.buy}>
+            <span slot="fallback" class="text-xs text-zinc-500 animate-pulse">
+              Cargando botón de compra...
+            </span>
+          </BuyButton>
+        )
+      }
+
     </aside>
     <main class="w-3/4">
       <h1 class="text-3xl font-bold mb-2">{book.data.title}</h1>
@@ -60,17 +62,6 @@ export const prerender = true;
       <div class="prose mt-6">
         <Content />
       </div>
-
-      <!-- {book.data.buy && (
-        <a 
-          href={book.data.buy.spain} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          class="inline-block mt-6 text-sm text-indigo-600 hover:underline"
-        >
-          Ver ficha en Amazon España
-        </a>
-      )} -->
     </main>
   </div>
   <Footer />
