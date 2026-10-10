@@ -18,6 +18,7 @@ const { id, title, author, cover, pages, tag = "Desarrollo" } = Astro.props;
     class="relative aspect-[16/10] overflow-hidden rounded-xl border border-[#170d0e]/10 bg-[#eddbdd] shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg"
   >
     <img
+      transition:name={`img-${id}`}
       src={cover}
       alt={`Portada de ${title}`}
       class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
