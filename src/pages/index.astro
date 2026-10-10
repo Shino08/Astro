@@ -7,7 +7,7 @@ import BookCard from '../components/BookCard.astro';
 import Footer from '../components/Footer.astro';
 import { getCollection } from 'astro:content';
 
-const libros = await getCollection('libros');
+const books = await getCollection('books');
 ---
 
 <Layout title="DevBooks — Lecturas de Programación">
@@ -26,13 +26,13 @@ const libros = await getCollection('libros');
       <!-- Grilla de libros -->
       <section class="mx-auto max-w-7xl px-6 py-10">
         <div class="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {libros.map((libro) => (
+          {books.map((book) => (
             <BookCard
-              id={libro.id}
-              title={libro.data.title}
-              author={libro.data.authors[0]}
-              cover={libro.data.cover}
-              pages={libro.data.pages}
+              id={book.id}
+              title={book.data.title}
+              author={book.data.author}
+              cover={book.data.img}
+              readtime={book.data.readtime}
             />
           ))}
         </div>
