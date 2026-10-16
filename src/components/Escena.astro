@@ -1,0 +1,37 @@
+---
+/**
+ * La escena del establecimiento: un estante dibujado a una sola línea y con
+ * rellenos planos.
+ *
+ * El dibujo va con `meet`, nunca `slice`: en una columna alta un recorte
+ * lateral se comía el primer lomo. El estante es un elemento aparte que cruza
+ * la plancha de lado a lado, así que el paso del color no depende del encuadre.
+ *
+ * Es decorativa, así que se oculta a los lectores de pantalla; el bocadillo que
+ * va encima sí es texto real.
+ */
+
+---
+
+<div class="escena">
+  <div class="escena__dibujo">
+    <svg viewBox="0 0 620 300" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+      <g stroke="currentColor" stroke-width="2" fill="none">
+        <rect x="126" y="150" width="72" height="150" fill="var(--arena)" />
+        <rect x="206" y="104" width="72" height="196" fill="var(--balloon)" />
+        <rect x="286" y="168" width="72" height="132" fill="var(--verde)" />
+        <rect x="366" y="278" width="128" height="22" fill="var(--balloon)" />
+        <rect x="380" y="256" width="100" height="22" fill="var(--arena)" />
+        <!-- Lettering insinuado en un lomo: dos trazos, no una tipografía. -->
+        <line x1="228" y1="132" x2="256" y2="132" />
+        <line x1="228" y1="148" x2="256" y2="148" />
+      </g>
+    </svg>
+  </div>
+
+  <div class="escena__estante"></div>
+
+  <div class="escena__bocadillo">
+    <slot />
+  </div>
+</div>

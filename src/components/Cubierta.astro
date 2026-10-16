@@ -1,0 +1,26 @@
+---
+interface Props {
+  titulo: string;
+  /** Archivo en `public/`. Si falta, la colección dibuja la placa. */
+  img?: string;
+  /** Token de relleno plano: cielo, arena o verde. */
+  relleno: string;
+  /** Marca de esquina de la placa dibujada. */
+  marca?: string;
+}
+
+const { titulo, img, relleno, marca } = Astro.props;
+---
+
+{
+  img ? (
+    <div class="placa">
+      <img src={`/${img}`} alt={`Portada de ${titulo}`} loading="lazy" decoding="async" />
+    </div>
+  ) : (
+    <div class:list={["placa", "placa--dibujada", `placa--${relleno}`]} aria-hidden="true">
+      {marca && <span class="placa__marca">{marca}</span>}
+      <span class="placa__titulo">{titulo}</span>
+    </div>
+  )
+}

@@ -1,98 +1,120 @@
-# 📚 DevBooks — Explorando Astro Moderno
+# 📚 DevBooks — Biblioteca técnica en español
 
-Proyecto práctico para dominar la arquitectura moderna de **Astro** (Content Layer, Server Islands, View Transitions y tipado estricto de entorno), tomando como base la creación de un catálogo editorial de libros técnicos de desarrollo.
+Catálogo curado de libros técnicos en español. El sitio es un **escaparate**: muestra el catálogo y
+presenta cada título para que el visitante decida qué leer después. **Aquí no se vende** — no hay
+carrito, ni precios, ni proceso de pago.
 
----
+Cada ficha declara de antemano dos cosas: qué contiene (descripción en lenguaje llano) y cuánto
+cuesta en tiempo de lectura (`readtime`). Esa segunda es la promesa diferencial del producto.
 
-## 🎯 Conceptos Clave y Aprendizajes
+## 🎨 El mundo visual
 
-Este repositorio implementa las características fundamentales de la arquitectura actual de Astro:
+El frontend está diseñado como la **plancha de un álbum de línea clara**: un papel azul-blanco, un
+único grosor de tinta (`2px`) para todo lo que está dibujado, rellenos planos (cielo, arena, verde)
+y ni una sola sombra, degradado o desenfoque. El rojo aparece **una vez por plancha** y nombra la
+acción que esa pantalla necesita.
 
-- **Content Layer:** Migración del sistema legacy hacia `src/content.config.ts` con `defineCollection`, esquemas de validación estrictos vía **Zod** y carga de Markdown con el loader `glob`.
-- **Server Islands (`server:defer`):** Renderizado híbrido donde las páginas se prerenderizan de forma estática (`prerender = true`), delegando componentes dinámicos al servidor bajo demanda con estados de carga (`slot="fallback"`):
-  - `BookScore.astro`: Simulación de puntuación obtenida en tiempo de ejecución.
-  - `BuyButton.astro`: Adaptación geográfica del enlace de compra (España vs. USA) leyendo cabeceras HTTP (`X-Vercel-IP-Country`).
-- **View Transitions (`ClientRouter`):** Transiciones de navegación suaves estilo SPA y persistencia visual de portadas entre páginas con `transition:name`.
-- **Variables de Entorno Tipadas:** Validación y segmentación de variables de cliente y servidor mediante `envField` en `astro.config.mjs`.
-- **Tailwind CSS v4 + Typography:** Integración directa mediante `@tailwindcss/vite` y formateo de Markdown generado por Astro con `@tailwindcss/typography` (`prose`).
+El sistema completo está documentado en [`DESIGN.md`](DESIGN.md), con sus tokens, reglas con nombre
+y componentes. El contexto de producto, en [`PRODUCT.md`](PRODUCT.md).
 
----
+## 🏗️ Arquitectura
 
-## 📁 Estructura del Proyecto
+Astro con **Content Layer**: el catálogo son archivos Markdown y el build clasifica cada título.
 
 ```text
-├── public/
-│   └── (imágenes estáticas de portadas)
 ├── src/
-│   ├── components/
-│   │   ├── AmazonLogo.astro   # Icono vectorial de Amazon
-│   │   ├── BookCard.astro     # Tarjeta de catálogo con proporciones 16:10
-│   │   ├── BookScore.astro    # Server Island de valoración
-│   │   ├── BuyButton.astro    # Server Island con detección de país
-│   │   ├── Filters.astro      # Barra de filtrado por temas
-│   │   ├── Footer.astro       # Pie de página editorial
-│   │   ├── Header.astro       # Barra de navegación y buscador
-│   │   └── Hero.astro         # Sección principal de bienvenida
+│   ├── components/            # Las piezas del álbum
+│   │   ├── Banda.astro        # Franja de registro (cabecera impresa)
+│   │   ├── Teclas.astro       # Filtro por materia: enlaces reales, sin JS
+│   │   ├── Buscar.astro       # Búsqueda: el único JavaScript del sitio
+│   │   ├── Escena.astro       # El estante dibujado a una sola línea (SVG)
+│   │   ├── Bocadillo.astro    # Lo que alguien dice, con cola trazada
+│   │   ├── Caja.astro         # La voz del narrador, en versalitas
+│   │   ├── Panel.astro        # La viñeta de un título en el catálogo
+│   │   ├── Cubierta.astro     # Portada real, o placa tipográfica dibujada
+│   │   ├── Hueco.astro        # El siguiente hueco del catálogo, sin inventar
+│   │   ├── Flecha.astro       # El único icono, a un trazo
+│   │   └── Pie.astro          # Franja final
 │   ├── content/
-│   │   └── books/             # Archivos Markdown (.md) con frontmatter tipado
-│   ├── layouts/
-│   │   └── Layout.astro       # Layout global con ClientRouter y estilos base
+│   │   ├── books/             # Un .md por libro (+ _plantilla.md.example)
+│   │   └── temas.ts           # Fuente única de las materias del catálogo
+│   ├── layouts/Layout.astro   # Documento base; sin ClientRouter a propósito
 │   ├── pages/
-│   │   ├── index.astro        # Listado principal con getCollection('books')
-│   │   └── libro/
-│   │       └── [id].astro     # Rutas estáticas dinámicas con getStaticPaths y render()
-│   ├── styles/
-│   │   └── global.css         # Importación de Tailwind v4 y plugins
-│   └── content.config.ts      # Definición de colecciones y esquemas Zod
-├── astro.config.mjs           # Adaptador de servidor (Node/Vercel) y variables de entorno
-└── package.json
+│   │   ├── index.astro              # La plancha del catálogo completo
+│   │   ├── materia/[tema].astro     # El catálogo acotado por materia
+│   │   ├── libro/[id].astro         # La ficha de un título
+│   │   └── 404.astro                # Plancha que no está en el álbum
+│   ├── styles/global.css      # Tokens, base, superficies y piezas del mundo
+│   └── content.config.ts      # Esquema Zod de la colección
+├── public/fonts/              # Archivo y Archivo Black, auto-hospedadas
+├── DESIGN.md                  # El sistema de diseño, documentado del build
+└── PRODUCT.md                 # La verdad de producto
 ```
 
----
+### JavaScript en el cliente
 
-## 🛠️ Tecnologías
+Prácticamente no hay. Lo único que se envía es el filtro de búsqueda de `Buscar.astro`, en línea y
+sin dependencias: nace **oculto** y solo el script lo revela, de modo que sin JS no queda un control
+muerto a la vista. Acotar el catálogo sigue siendo cosa de las **teclas de materia**, que son rutas
+estáticas (`/materia/<slug>`), enlazables, indexables y navegables con teclado, sin una línea de JS.
 
-- **Framework:** [Astro](https://astro.build/)
-- **Estilos:** [Tailwind CSS v4](https://tailwindcss.com/) & [@tailwindcss/typography](https://tailwindcss.com/docs/typography-plugin)
-- **Validación de Datos:** [Zod](https://zod.dev/)
-- **Gestor de Paquetes:** [pnpm](https://pnpm.io/)
-- **Tipado:** [TypeScript](https://www.typescriptlang.org/)
+Las fuentes van auto-hospedadas en `public/fonts/`: el primer viewport no depende de
+`fonts.googleapis.com` ni de ningún tercero.
 
----
+## ⚙️ Añadir un título
 
-## ⚙️ Variables de Entorno
+1. Copia `src/content/books/_plantilla.md.example` a `src/content/books/mi-libro.md`.
+2. Rellena el frontmatter: `title`, `author`, `readtime` (minutos), `tema`, `orden`, `description`.
+   `img` es opcional: si falta, el panel dibuja una placa tipográfica en el color de su materia.
+3. Si la revisa una persona, quita `borrador: true`.
+4. `pnpm build`. El título aparece en el catálogo, en su materia y con su propia ficha.
 
-El proyecto valida las variables mediante `envField` en `astro.config.mjs`. Crea un archivo `.env` en la raíz del proyecto:
+Una materia nueva es una entrada en `src/content/temas.ts`: el esquema, las teclas y la ruta
+estática salen de ahí.
 
-```env
-# Define si se muestra o no el botón de compra en el servidor
-SHOW_BUY_BUTTON=true
-```
-
----
-
-## 🚀 Instalación y Uso
+## 🚀 Instalación y uso
 
 1. **Instalar dependencias:**
+
    ```bash
    pnpm install
    ```
 
-2. **Generar tipos del Content Layer y Entorno:**
+2. **Generar tipos del Content Layer:**
+
    ```bash
    pnpm astro sync
    ```
 
-3. **Iniciar servidor en desarrollo:**
+3. **Iniciar el servidor de desarrollo:**
+
    ```bash
    pnpm dev
    ```
+
    Disponible en [http://localhost:4321](http://localhost:4321).
 
-4. **Compilar y previsualizar producción:**
+4. **Compilar y previsualizar:**
+
    ```bash
    pnpm build
    pnpm preview
    ```
 
----
+## 📝 Notas del cambio de frontend
+
+Este frontend reemplaza al anterior catálogo de demostración. Se conservó la capa de contenido
+(Markdown + Content Layer, ahora con `tema`, `orden` y `borrador`) y se retiró todo lo que
+pertenecía a un producto que ya no existe:
+
+- **Compra fuera.** Se eliminaron `BuyButton`, `AmazonLogo` y la llamada a la acción de compra: el
+  escaparate no vende. Los enlaces `buy.spain` / `buy.usa` **siguen en el frontmatter como dato**,
+  no se muestran.
+- **Puntuación fuera.** `BookScore` mostraba una valoración aleatoria de una API externa: era un
+  dato inventado, no una reseña.
+- **View Transitions fuera.** `ClientRouter` se retiró porque el mundo de este frontend no tiene
+  easing: el paso de plancha es un corte limpio, y eso ya lo hace la navegación del navegador.
+- **Server Islands fuera.** Al desaparecer las islas diferidas, quedaron sin uso el adaptador de
+  Node y las variables `SHOW_BUY_BUTTON` y `SCORE_API_ENDPOINT`. **Se han dejado tal cual** en
+  `astro.config.mjs` para no cambiar el modelo de despliegue sin pedirlo: si quieres un build
+  puramente estático, se pueden quitar el adaptador y las tres variables de entorno.

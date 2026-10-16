@@ -1,68 +1,110 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { SHOW_BUY_BUTTON } from 'astro:env/server';
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
-import AmazonLogo from '../../components/AmazonLogo.astro';
-import BookScore from '../../components/BookScore.astro';
-import { getCollection, render } from 'astro:content';
-import BuyButton from '../../components/BuyButton.astro';
-
-export async function getStaticPaths() {
-  const books = await getCollection('books');
-  return books.map((book) => ({
-    params: { id: book.id },
-    props: { book: book },
-  }));
-}
-
-const { book } = Astro.props;
-
-const { Content } = await render(book);
+import { getCollection, render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import { temaLabel, temaRelleno, tiempoLargo } from "../../content/temas";
+import Layout from "../../layouts/Layout.astro";
+import Banda from "../../components/Banda.astro";
+import Bocadillo from "../../components/Bocadillo.astro";
+import Caja from "../../components/Caja.astro";
+import Cubierta from "../../components/Cubierta.astro";
+import Pie from "../../components/Pie.astro";
 
 export const prerender = true;
+
+export async function getStaticPaths() {
+  const libros = await getCollection("books");
+  return libros.map((libro) => ({ params: { id: libro.id }, props: { libro } }));
+}
+
+interface Props {
+  libro: CollectionEntry<"books">;
+}
+
+const { libro } = Astro.props;
+const { data } = libro;
+const { Content } = await render(libro);
+
+const todos = (await getCollection("books")).sort((a, b) => a.data.orden - b.data.orden);
+const posicion = todos.findIndex((entrada) => entrada.id === libro.id);
+const anterior = posicion > 0 ? todos[posicion - 1] : undefined;
+const siguiente = posicion < todos.length - 1 ? todos[posicion + 1] : undefined;
+
+const minutos = todos.reduce((suma, entrada) => suma + entrada.data.readtime, 0);
+const relleno = temaRelleno(data.tema);
+const tono = relleno === "cielo" ? "cielo" : relleno === "verde" ? "verde" : "arena";
 ---
 
-<Layout title={book.data.title}>
-  <Header/>
-  <div class="flex gap-12 max-w-5xl mx-auto p-6">
-    <aside class="w-1/4">
-      <a href="/" class="text-indigo-600 hover:underline opacity-75">Volver atras</a>
-      <img
-        transition:name={`img-${book.id}`}
-        src={`/${book.data.img}`} 
-        alt={book.data.title} 
-        class="rounded w-72 h-auto shadow-md object-contain" 
-      />
+<Layout title={`${data.title} — DevBooks`} description={data.description}>
+  <Banda centro={`Plancha ${posicion + 1} de ${todos.length}`} />
 
-      <BookScore server:defer id={book.id} >
-        <span slot="fallback" class="text-xs text-zinc-500">Cargando puntuación...</span>
-      </BookScore>
+  <main id="contenido">
+    <div class="nivel">
+      <div class="ficha">
+        <div class="ficha__cubierta">
+          <Cubierta
+            titulo={data.title}
+            img={data.img}
+            relleno={relleno}
+            marca={data.borrador ? "Sin revisar" : undefined}
+          />
+        </div>
 
-      {
-        SHOW_BUY_BUTTON && (
-          <BuyButton server:defer buy={book.data.buy}>
-            <span slot="fallback" class="text-xs text-zinc-500 animate-pulse">
-              Cargando botón de compra...
-            </span>
-          </BuyButton>
-        )
-      }
+        <div class="ficha__cuerpo">
+          <h1 class="ficha__titulo">{data.title}</h1>
+          <p class="ficha__autor">{data.author}</p>
 
-    </aside>
-    <main class="w-3/4">
-      <h1 class="text-3xl font-bold mb-2">{book.data.title}</h1>
-      <p class="text-zinc-600 mb-4">{book.data.author}</p>
-      <p class="text-zinc-700 mb-4">Tiempo de lectura: {book.data.readtime} minutos</p>
+          <!-- La franja de datos va *después* del titular: por delante sería
+               una kicker, y el titular se sostiene solo. -->
+          <Caja tono={tono}>
+            <a href={`/materia/${data.tema}`}>{temaLabel(data.tema)}</a>
+            <span>{data.readtime} min</span>
+            {data.borrador && <span>Ficha sin revisar</span>}
+          </Caja>
 
-      <p class="text-zinc-800 leading-relaxed">
-        {book.data.description || 'Sin descripción disponible.'}
-      </p>
+          <Bocadillo>{data.description}</Bocadillo>
 
-      <div class="prose mt-6">
-        <Content />
+          <p class="ficha__coste">
+            <span>Coste de lectura</span>
+            {tiempoLargo(data.readtime)}
+          </p>
+
+          <div class="narracion">
+            <p class="narracion__cap">Qué cuenta este libro</p>
+            <div class="prose">
+              <Content />
+            </div>
+          </div>
+        </div>
       </div>
-    </main>
-  </div>
-  <Footer />
+    </div>
+
+    <div class="nivel pasar">
+      <div class="pasar__hueco">
+        {
+          anterior ? (
+            <a href={`/libro/${anterior.id}`}>
+              <span>Plancha anterior</span>
+              <strong>{anterior.data.title}</strong>
+            </a>
+          ) : (
+            <p class="pasar__vacio">Primera plancha del álbum</p>
+          )
+        }
+      </div>
+      <div class="pasar__hueco">
+        {
+          siguiente ? (
+            <a href={`/libro/${siguiente.id}`}>
+              <span>Plancha siguiente</span>
+              <strong>{siguiente.data.title}</strong>
+            </a>
+          ) : (
+            <p class="pasar__vacio">Última plancha del álbum</p>
+          )
+        }
+      </div>
+    </div>
+
+    <Pie titulos={todos.length} minutos={minutos} />
+  </main>
 </Layout>

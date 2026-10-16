@@ -1,23 +1,33 @@
 ---
-import { ClientRouter } from 'astro:transitions';
-import '../styles/global.css'; // <-- ESTA LÍNEA ES CLAVE
+import "../styles/global.css";
 
 interface Props {
-  title?: string;
+  title: string;
+  description: string;
 }
 
-const { title = "DevBooks" } = Astro.props;
+const { title, description } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    <ClientRouter />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#e9eef2" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!--
+      Sin ClientRouter: en este mundo el paso de plancha es un corte limpio, y
+      un corte limpio es exactamente lo que hace la navegación del navegador.
+      Se ahorra el script de cliente entero.
+    -->
   </head>
-  <body class="bg-[#fdf5f6] text-[#170d0e] antialiased">
-    <slot />
+  <body>
+    <a class="salto" href="#contenido">Saltar al contenido</a>
+    <div class="plancha">
+      <slot />
+    </div>
   </body>
 </html>

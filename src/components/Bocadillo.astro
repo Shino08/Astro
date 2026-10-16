@@ -1,0 +1,12 @@
+---
+interface Props {
+  /** De qué lado cae la cola del bocadillo. */
+  lado?: "izq" | "der";
+}
+
+const { lado = "izq" } = Astro.props;
+---
+
+<p class:list={["bocadillo", lado === "der" && "bocadillo--der"]}>
+  <slot />
+</p>

@@ -1,0 +1,18 @@
+---
+interface Props {
+  /** Dato impreso entre la marca y la nota: el estado del catálogo. */
+  centro?: string;
+}
+
+const { centro } = Astro.props;
+---
+
+<header class="banda">
+  <a class="banda__marca" href="/">DevBooks</a>
+  <span>Biblioteca técnica en español</span>
+  {centro && <span>{centro}</span>}
+  <span class="banda__empuje banda__nota">
+    <span class="banda__punto" aria-hidden="true"></span>
+    Escaparate: aquí no se vende
+  </span>
+</header>

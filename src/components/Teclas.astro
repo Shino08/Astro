@@ -1,0 +1,38 @@
+---
+import { TEMA_SLUGS, temaLabel, temaRelleno } from "../content/temas";
+
+interface Props {
+  /** `"todas"` en el catálogo completo, o el slug de la materia activa. */
+  activa: string;
+  conteos: Record<string, number>;
+  total: number;
+}
+
+const { activa, conteos, total } = Astro.props;
+---
+
+<nav class="teclas rejilla-ink" aria-label="Materias del catálogo">
+  <a class="tecla" href="/" aria-current={activa === "todas" ? "page" : undefined}>
+    <span class="tecla__swatch" style="background: var(--ink)" aria-hidden="true"></span>
+    Todas
+    <span class="tecla__n">{total}</span>
+  </a>
+
+  {
+    TEMA_SLUGS.map((slug) => (
+      <a
+        class="tecla"
+        href={`/materia/${slug}`}
+        aria-current={activa === slug ? "page" : undefined}
+      >
+        <span
+          class="tecla__swatch"
+          style={`background: var(--${temaRelleno(slug)})`}
+          aria-hidden="true"
+        />
+        {temaLabel(slug)}
+        <span class="tecla__n">{conteos[slug] ?? 0}</span>
+      </a>
+    ))
+  }
+</nav>

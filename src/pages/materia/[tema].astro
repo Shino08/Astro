@@ -1,0 +1,126 @@
+---
+import { getCollection } from "astro:content";
+import { TEMA_SLUGS, temaLabel, type Tema } from "../../content/temas";
+import Layout from "../../layouts/Layout.astro";
+import Banda from "../../components/Banda.astro";
+import Bocadillo from "../../components/Bocadillo.astro";
+import Buscar from "../../components/Buscar.astro";
+import Escena from "../../components/Escena.astro";
+import Flecha from "../../components/Flecha.astro";
+import Hueco from "../../components/Hueco.astro";
+import Panel from "../../components/Panel.astro";
+import Pie from "../../components/Pie.astro";
+import Teclas from "../../components/Teclas.astro";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  return TEMA_SLUGS.map((slug) => ({ params: { tema: slug } }));
+}
+
+const tema = Astro.params.tema as Tema;
+const etiqueta = temaLabel(tema);
+
+const todos = await getCollection("books");
+const libros = todos
+  .filter((libro) => libro.data.tema === tema)
+  .sort((a, b) => a.data.orden - b.data.orden);
+
+const recomendado = libros[0];
+const minutos = libros.reduce((suma, libro) => suma + libro.data.readtime, 0);
+
+const conteos = Object.fromEntries(
+  TEMA_SLUGS.map((slug) => [slug, todos.filter((libro) => libro.data.tema === slug).length]),
+);
+
+const celdas = libros.length + 1;
+const relleno = (6 - (celdas % 6)) % 6;
+---
+
+<Layout
+  title={`${etiqueta} — DevBooks`}
+  description={`Títulos de ${etiqueta} en el catálogo DevBooks, con su coste de lectura declarado.`}
+>
+  <Banda centro={`${etiqueta} · ${libros.length} de ${todos.length} títulos`} />
+
+  <main id="contenido">
+    <div class="nivel">
+      <Teclas activa={tema} conteos={conteos} total={todos.length} />
+      <Buscar total={libros.length} />
+      <noscript>
+        <p class="caja">
+          Sin JavaScript la búsqueda no está disponible: cambia de materia con las teclas de arriba.
+        </p>
+      </noscript>
+    </div>
+
+    <div class="nivel establecer">
+      <div class="establecer__texto">
+        <h1 class="establecer__titular">{etiqueta}</h1>
+        <p>
+          {
+            libros.length === 0
+              ? "Todavía no hay ningún título clasificado en esta materia. El hueco está abierto y se rellena añadiendo un archivo Markdown."
+              : `Los títulos de la colección que caen en esta materia, con lo que cuesta leerlos. Son ${libros.length} de ${todos.length}.`
+          }
+        </p>
+        {
+          recomendado ? (
+            <a class="accion" href={`/libro/${recomendado.id}`}>
+              Empezar por {recomendado.data.title}
+              <Flecha />
+            </a>
+          ) : (
+            <a class="accion" href="/">
+              Ver el catálogo completo
+              <Flecha />
+            </a>
+          )
+        }
+      </div>
+
+      <Escena>
+        <Bocadillo lado="der">
+          {libros.length === 0
+            ? "Esta materia está vacía: el siguiente hueco puede ser tuyo."
+            : `Todo lo de ${etiqueta.toLowerCase()} cabe en un estante corto.`}
+        </Bocadillo>
+      </Escena>
+    </div>
+
+    {
+      libros.length > 0 && (
+        <div class="nivel">
+          <div class="rejilla-ink catalogo" id="catalogo">
+            {libros.map((libro) => (
+              <Panel libro={libro} />
+            ))}
+            <Hueco />
+            {Array.from({ length: relleno }).map(() => (
+              <div aria-hidden="true" />
+            ))}
+          </div>
+
+          <p class="hueco" data-sin-resultados hidden>
+            Ningún título de esta materia coincide con la búsqueda. Prueba con otra palabra o cambia
+            de materia.
+          </p>
+        </div>
+      )
+    }
+
+    <div class="nivel pasar">
+      <div class="pasar__hueco">
+        <a href="/">
+          <span>Todo el catálogo</span>
+          <strong>Ver las {todos.length} planchas</strong>
+        </a>
+      </div>
+      <div class="pasar__hueco">
+        <p class="pasar__vacio">Materia {etiqueta}</p>
+      </div>
+    </div>
+
+    <Pie titulos={todos.length} minutos={minutos} />
+  </main>
+</Layout>

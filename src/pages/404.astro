@@ -1,0 +1,42 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../layouts/Layout.astro";
+import Banda from "../components/Banda.astro";
+import Bocadillo from "../components/Bocadillo.astro";
+import Escena from "../components/Escena.astro";
+import Flecha from "../components/Flecha.astro";
+
+export const prerender = true;
+
+const libros = await getCollection("books");
+---
+
+<Layout
+  title="Plancha que no existe — DevBooks"
+  description="Esta página no forma parte del catálogo de DevBooks."
+>
+  <Banda centro="Plancha que no existe" />
+
+  <main id="contenido">
+    <div class="nivel establecer">
+      <div class="establecer__texto">
+        <h1 class="establecer__titular">Esta plancha no está en el álbum.</h1>
+        <p>
+          La dirección que has abierto no corresponde a ninguna página del catálogo. Hay
+          {" "}
+          {libros.length}
+          {" "}
+          títulos clasificados y todos están a un clic.
+        </p>
+        <a class="accion" href="/">
+          Volver al catálogo
+          <Flecha />
+        </a>
+      </div>
+
+      <Escena>
+        <Bocadillo lado="der">Por aquí no hay ninguna plancha. El estante está al lado.</Bocadillo>
+      </Escena>
+    </div>
+  </main>
+</Layout>

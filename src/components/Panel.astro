@@ -1,0 +1,38 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { temaLabel, temaRelleno } from "../content/temas";
+import Cubierta from "./Cubierta.astro";
+
+interface Props {
+  libro: CollectionEntry<"books">;
+}
+
+const { libro } = Astro.props;
+const { data, id } = libro;
+const relleno = temaRelleno(data.tema);
+const buscable = [data.title, data.author, data.description, temaLabel(data.tema)].join(" · ");
+---
+
+<article class="panel" data-panel data-buscar={buscable}>
+  <p class="panel__tema">
+    <i style={`background: var(--${relleno})`} aria-hidden="true"></i>
+    {temaLabel(data.tema)}
+    {data.borrador && <span>· borrador</span>}
+  </p>
+
+  <Cubierta
+    titulo={data.title}
+    img={data.img}
+    relleno={relleno}
+    marca={data.borrador ? "Sin revisar" : undefined}
+  />
+
+  <h2 class="panel__titulo"><a href={`/libro/${id}`}>{data.title}</a></h2>
+
+  <p class="panel__autor">{data.author}</p>
+
+  <p class="franja">
+    <span>{data.readtime} min</span>
+    <span>Abrir ficha</span>
+  </p>
+</article>

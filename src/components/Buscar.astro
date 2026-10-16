@@ -1,0 +1,91 @@
+---
+interface Props {
+  total: number;
+}
+
+const { total } = Astro.props;
+---
+
+<!--
+  El único JavaScript del sitio. Nace oculto: sin JS no queda un control muerto
+  a la vista, y acotar el catálogo sigue siendo cosa de las materias, que son
+  enlaces reales.
+-->
+<div class="buscar" data-buscar hidden>
+  <label class="visualmente-oculto" for="buscar-campo">Buscar en el catálogo</label>
+
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 20 20"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="8.5" cy="8.5" r="5.5"></circle>
+    <line x1="12.7" y1="12.7" x2="17.6" y2="17.6"></line>
+  </svg>
+
+  <input
+    id="buscar-campo"
+    class="buscar__campo"
+    type="search"
+    placeholder="Título, autoría o materia"
+    autocomplete="off"
+    aria-controls="catalogo"
+  />
+
+  <span class="buscar__estado" data-estado role="status">{total} títulos</span>
+</div>
+
+<script>
+  const raiz = document.querySelector<HTMLElement>("[data-buscar]");
+  const campo = raiz?.querySelector<HTMLInputElement>("input[type='search']");
+  const estado = raiz?.querySelector<HTMLElement>("[data-estado]");
+  const sinResultados = document.querySelector<HTMLElement>("[data-sin-resultados]");
+  const paneles = Array.from(document.querySelectorAll<HTMLElement>("[data-panel]"));
+  const huecos = Array.from(document.querySelectorAll<HTMLElement>("[data-hueco]"));
+
+  if (raiz && campo && estado && paneles.length > 0) {
+    raiz.hidden = false;
+
+    // Sin acentos y sin mayúsculas: «Git» encuentra «git» y «refactorizacion»
+    // encuentra «Refactorización».
+    const plano = (texto: string) =>
+      texto
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    const indice = paneles.map((panel) => ({
+      panel,
+      texto: plano(panel.dataset.buscar ?? ""),
+    }));
+
+    campo.addEventListener("input", () => {
+      const consulta = plano(campo.value.trim());
+      let visibles = 0;
+
+      for (const entrada of indice) {
+        const coincide = consulta === "" || entrada.texto.includes(consulta);
+        entrada.panel.hidden = !coincide;
+        if (coincide) visibles += 1;
+      }
+
+      for (const hueco of huecos) {
+        hueco.hidden = consulta !== "";
+      }
+
+      estado.textContent =
+        consulta === ""
+          ? `${visibles} títulos`
+          : visibles === 1
+            ? "1 coincidencia"
+            : `${visibles} coincidencias`;
+
+      if (sinResultados) sinResultados.hidden = visibles > 0;
+    });
+  }
+</script>

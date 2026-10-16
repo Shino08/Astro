@@ -1,45 +1,94 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Header from '../components/Header.astro';
-import Hero from '../components/Hero.astro';
-import Filters from '../components/Filters.astro';
-import BookCard from '../components/BookCard.astro';
-import Footer from '../components/Footer.astro';
-import { getCollection } from 'astro:content';
+import { getCollection } from "astro:content";
+import { TEMA_SLUGS } from "../content/temas";
+import Layout from "../layouts/Layout.astro";
+import Banda from "../components/Banda.astro";
+import Bocadillo from "../components/Bocadillo.astro";
+import Buscar from "../components/Buscar.astro";
+import Escena from "../components/Escena.astro";
+import Flecha from "../components/Flecha.astro";
+import Hueco from "../components/Hueco.astro";
+import Panel from "../components/Panel.astro";
+import Pie from "../components/Pie.astro";
+import Teclas from "../components/Teclas.astro";
 
-const books = await getCollection('books');
 export const prerender = true;
+
+const libros = (await getCollection("books")).sort((a, b) => a.data.orden - b.data.orden);
+const recomendado = libros[0];
+const minutos = libros.reduce((suma, libro) => suma + libro.data.readtime, 0);
+
+const conteos = Object.fromEntries(
+  TEMA_SLUGS.map((slug) => [slug, libros.filter((libro) => libro.data.tema === slug).length]),
+);
+
+// El álbum se compone en filas completas: seis celdas son múltiplo de una, dos
+// y tres columnas, así que ninguna fila queda a medias en ningún ancho.
+const celdas = libros.length + 1;
+const relleno = (6 - (celdas % 6)) % 6;
 ---
 
-<Layout title="DevBooks — Lecturas de Programación">
-  <div class="min-h-screen bg-[#fdf5f6] text-[#170d0e] antialiased">
-    <Header />
+<Layout
+  title="DevBooks — Biblioteca técnica en español"
+  description="Catálogo curado de libros técnicos en español. Cada ficha declara su materia y su coste de lectura."
+>
+  <Banda centro={`${libros.length} títulos clasificados`} />
 
-    <main>
-      <Hero
-        eyebrow="Notas y Lecturas"
-        title="Libros y guías esenciales para desarrolladores"
-        description="Selección de títulos técnicos y fundamentos de arquitectura de software disponibles en español."
-      />
+  <main id="contenido">
+    <div class="nivel">
+      <Teclas activa="todas" conteos={conteos} total={libros.length} />
+      <Buscar total={libros.length} />
+      <noscript>
+        <p class="caja">
+          Sin JavaScript la búsqueda no está disponible: acota el catálogo con las materias de
+          arriba.
+        </p>
+      </noscript>
+    </div>
 
-      <Filters />
+    <div class="nivel establecer">
+      <div class="establecer__texto">
+        <h1 class="establecer__titular">
+          Libros técnicos en español, con el coste de lectura declarado.
+        </h1>
+        <p>
+          Una colección pequeña y elegida a mano. Cada ficha dice de antemano qué contiene y cuánto
+          tiempo te va a costar leerla.
+        </p>
+        {
+          recomendado && (
+            <a class="accion" href={`/libro/${recomendado.id}`}>
+              Empezar por {recomendado.data.title}
+              <Flecha />
+            </a>
+          )
+        }
+      </div>
 
-      <!-- Grilla de libros -->
-      <section class="mx-auto max-w-7xl px-6 py-10">
-        <div class="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {books.map((book) => (
-            <BookCard
-              id={book.id}
-              title={book.data.title}
-              author={book.data.author}
-              cover={book.data.img}
-              readtime={book.data.readtime}
-            />
-          ))}
-        </div>
-      </section>
-    </main>
+      <Escena>
+        <Bocadillo lado="der">
+          Empieza por Git: entender el historial te sirve en cualquier lenguaje.
+        </Bocadillo>
+      </Escena>
+    </div>
 
-    <Footer />
-  </div>
+    <div class="nivel">
+      <div class="rejilla-ink catalogo" id="catalogo">
+        {libros.map((libro) => <Panel libro={libro} />)}
+        <Hueco />
+        {
+          Array.from({ length: relleno }).map(() => (
+            <div aria-hidden="true" />
+          ))
+        }
+      </div>
+
+      <p class="hueco" data-sin-resultados hidden>
+        Ningún título coincide con la búsqueda. Prueba con otra palabra o acota por materia con las
+        teclas de arriba.
+      </p>
+    </div>
+
+    <Pie titulos={libros.length} minutos={minutos} />
+  </main>
 </Layout>

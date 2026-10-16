@@ -3,6 +3,8 @@ title: Aprendiendo Git y GitHub
 author: Miguel Ángel Durán
 img: aprendiendo-git.jpg
 readtime: 224
+tema: control-de-versiones
+orden: 1
 description: Aprende a usar Git y GitHub para gestionar tus proyectos de código.
 buy:
   spain: https://amzn.to/4e3MYLG

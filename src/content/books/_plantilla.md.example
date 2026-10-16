@@ -1,0 +1,24 @@
+---
+title: Título del libro
+author: Autoría
+# Opcional: nombre del archivo en `public/`. Si falta, se dibuja una placa tipográfica.
+img: portada.jpg
+# Coste de lectura en minutos, estimado por quien ficha el título.
+readtime: 300
+# Una de las materias de `src/content/temas.ts`.
+tema: oficio
+# Orden de curaduría dentro del catálogo.
+orden: 5
+# Una o dos frases: qué contiene, en lenguaje llano.
+description: Qué cubre el libro y para quién es.
+# Quita esta línea cuando una persona haya revisado la ficha.
+borrador: true
+---
+
+Aquí va la reseña larga, en Markdown. Acepta **negrita**, enlaces, listas y
+citas:
+
+> Una cita textual del libro, si aporta.
+
+Esta extensión `.example` queda fuera del glob de la colección
+(`**/*.{md,mdx}`): renómbrala a `.md` para publicarla.

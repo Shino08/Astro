@@ -1,0 +1,11 @@
+---
+interface Props {
+  tono?: "arena" | "cielo" | "verde";
+}
+
+const { tono = "arena" } = Astro.props;
+---
+
+<p class:list={["caja", tono !== "arena" && `caja--${tono}`]}>
+  <slot />
+</p>

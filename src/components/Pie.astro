@@ -1,0 +1,40 @@
+---
+import { tiempoLargo } from "../content/temas";
+
+interface Props {
+  titulos: number;
+  minutos: number;
+}
+
+const { titulos, minutos } = Astro.props;
+---
+
+<footer class="pie">
+  <div>
+    <h2>La colección</h2>
+    <p>
+      DevBooks es una biblioteca técnica en español, elegida a mano. Cada ficha declara su materia
+      y su coste de lectura antes de que abras nada.
+    </p>
+    <p class="pie__sello-linea">
+      <span class="sello">Escaparate: aquí no se vende</span>
+    </p>
+  </div>
+
+  <div>
+    <h2>Cómo crece</h2>
+    <p>
+      Un título nuevo es un archivo Markdown en <code>src/content/books/</code> con su materia, su
+      orden y su coste de lectura. Sin panel de administración.
+    </p>
+  </div>
+
+  <div>
+    <h2>Los números</h2>
+    <ul>
+      <li>{titulos} títulos clasificados</li>
+      <li>{tiempoLargo(minutos)} de lectura en total</li>
+      <li>{new Date().getFullYear()} · Astro y Tailwind</li>
+    </ul>
+  </div>
+</footer>

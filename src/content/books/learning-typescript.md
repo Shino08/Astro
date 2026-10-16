@@ -3,6 +3,8 @@ title: Learning TypeScript
 author: Josh Goldberg
 img: learning-typescript.jpg
 readtime: 301
+tema: lenguajes
+orden: 2
 description: Domina TypeScript de 0 a experto
 buy:
   spain: https://amzn.to/3zlkdes
